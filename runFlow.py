@@ -6,21 +6,19 @@ import os
 import pandas as pd
 import glob
 
-def Gating(file):
+def NoZerosfile):
     os.chdir(path)
     fcs = FlowCal.io.FCSData(file)
     fcs = FlowCal.gate.high_low(fcs)
+    for channel in ('FSC-H', 'SSC-H', 'SSC-A'):
+        mask = fcs[:, channel] > 0
+        fcs = fcs[maks, :]
+
     
-
-
-
-
-
 
 
 def ProcessData(path, atc = False, iptg = False):
     os.chdir(path)
-
 
     if atc:
         filenamesATC = glob.glob('*atc*.fcs')
