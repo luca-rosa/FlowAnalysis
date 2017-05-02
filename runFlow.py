@@ -5,19 +5,35 @@ import numpy as np
 import os
 import pandas as pd
 import glob
+import numpy as np
 
-def NoZerosfile):
+def NoZeros(file):
+    '''Remove zero values and log10 transform'''
     os.chdir(path)
+
     fcs = FlowCal.io.FCSData(file)
     fcs = FlowCal.gate.high_low(fcs)
     for channel in ('FSC-H', 'SSC-H', 'SSC-A'):
         mask = fcs[:, channel] > 0
-        fcs = fcs[maks, :]
+        fcs = fcs[mask, :]
 
-    
+    log_fcs = np.log10(fcs[:, channels])
+    return(log_fcs)
+
+
+def Gating(file, do_plot = False):
+    '''Return density gated fcs file and the plot'''
+    fcs_gate = FlowCal.gate.density2d(file, channels = ['FSC-H', 'SSC-H'], gate_fraction = 0.70)
+
+    if do_plot:
+        plot_gate = FlowCal.plot.density2d(fcs_gate, channels = ['FSC-H', 'SSC-H'], mode = 'scatter')
+
+    return(fcs_gate, plot_gate)
+
 
 
 def ProcessData(path, atc = False, iptg = False):
+    '''Extract the data from every single FCS file and create a txt file'''
     os.chdir(path)
 
     if atc:
