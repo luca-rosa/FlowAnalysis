@@ -21,14 +21,26 @@ def noZeros(file):
     return(log_fcs)
 
 
-def gating(file, do_plot = False):
+def gating(file):
     '''Return density gated fcs file and the plot'''
-    fcs_gate = FlowCal.gate.density2d(file, channels = ['FSC-H', 'SSC-H'], gate_fraction = 0.70)
+    fcs_gate, mask, contour = FlowCal.gate.density2d(file,
+                                                     channels = ['FSC-H', 'SSC-H'],
+                                                     gate_fraction = 0.70,
+                                                     full_output= True)
 
-    if do_plot:
-        plot_gate = FlowCal.plot.density2d(fcs_gate, channels = ['FSC-H', 'SSC-H'], mode = 'scatter')
+    return(fcs_gate, contour)
 
-    return(fcs_gate, plot_gate)
+def plot(fcs, fcs_gate, contour):
+    fcs_plot = FlowCal.plot.density_and_hist(fcs,
+                                             gated_data = fcs_gate,
+                                             gate_contour= contour,
+                                             density_channels= ['FSC-H', 'SSC-H'],
+                                             density_params= {'mode':'scatter'},
+                                             hist_channels= ['BL1-H']
+                                              )
+    plt.tight_layout()
+
+    return fcs_plot
 
 
 
@@ -76,10 +88,6 @@ def processData(path, atc = False, iptg = False):
 
     print dataATC.Conc.unique()
     print dataIPTG.Conc.unique()
-
-
-
-def
 
 
 
