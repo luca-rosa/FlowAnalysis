@@ -4,12 +4,11 @@ import os
 import pandas as pd
 import glob
 import numpy as np
+import warnings
 
-def noZeros(file):
+def noZeros(fcs):
     '''Remove zero values and log10 transform'''
 
-
-    fcs = FlowCal.io.FCSData(file)
     fcs = FlowCal.gate.high_low(fcs)
     for channel in ('FSC-H', 'SSC-H', 'SSC-A'):
         mask = fcs[:, channel] > 0
@@ -24,24 +23,25 @@ def gating(file):
     '''Return density gated fcs file and the plot'''
     fcs_gate, mask, contour = FlowCal.gate.density2d(file,
                                                      channels = ['FSC-H', 'SSC-H'],
-                                                     gate_fraction = 0.60,
+                                                     gate_fraction = 0.50,
                                                      full_output= True)
 
     return(fcs_gate, contour)
 
-def plot(fcs, fcs_gate, contour, imagePath):
+def plot(fcs, fcs_gate, contour, imageName, imagePath):
+    os.chdir(imagePath)
     fcs_plot = FlowCal.plot.density_and_hist(fcs,
                                              gated_data = fcs_gate,
                                              gate_contour= contour,
                                              density_channels= ['FSC-H', 'SSC-H'],
                                              density_params= {'mode':'scatter',
-                                                              # 'xlim':[1e0, 1e1],
-                                                              # 'ylim': [1e0, 1e1],
-                                                              # 'xscale':'log',
-                                                              # 'yscale':'log'
+                                                              'xlim':[1e3, 1e5],
+                                                              'ylim': [1e3, 1e5],
+                                                              'xscale':'log',
+                                                              'yscale':'log'
                                                                },
                                              hist_channels = ['BL1-H', 'YL2-H'],
-                                             savefig = imagePath
+                                             savefig = imageName
                                              )
     return fcs_plot
 
@@ -92,48 +92,48 @@ def processData(path, atc = False, iptg = False):
 
 
 
-def beadsCalibration(fcs, beadsFCS, mef_values = 0):
-    fcs_beads = FlowCal.io.FCSData(beadsFCS)
+def beadsCalibration(imagePath):
+    '''Create au-mef function'''
+    warnings.filterwarnings('ignore')
 
-    fcs_beads = FlowCal.transform.to_rfi(fcs)
-
-    fcs_beads_g, __, contour = FlowCal.gate.density2d(b,
-                                                   channels= ['FSC', 'SSC'],
-                                                   gate_fraction= 0.3,
+    #Load beads data
+    fcs_beads = FlowCal.io.FCSData('../Beads1.fcs')
+    fcs_beads = FlowCal.transform.to_rfi(fcs_beads)
+    os.chdir(imagePath)
+    #Gating of the beads
+    fcs_beads_g, __, contour = FlowCal.gate.density2d(fcs_beads,
+                                                   channels= ['FSC-H', 'SSC-H'],
+                                                   gate_fraction= 0.4,
                                                    full_output= True)
 
-    beadsPlot = FlowCal.plot.density_and_hist(b,
-                                  gated_data=b_g,
+    #Plotting of the gated beads
+    beadsPlot = FlowCal.plot.density_and_hist(fcs_beads,
+                                  gated_data=fcs_beads_g,
                                   gate_contour= contour,
-                                  density_channels=['FSC', 'SSC'],
+                                  density_channels=['FSC-H', 'SSC-H'],
                                   density_params= {'mode':'scatter',
-                                                   'xlim': [1e2, 1e3],
-                                                   'ylim':[1e2, 1e3],
                                                    'sigma': 5},
-                                  hist_channels=['FL1'])
+                                  hist_channels=['BL1-H', 'YL2-H'],
+                                  savefig='gatedBeads.png')
 
+    # mef_values [(gfp/fitc/mefl/BL1),
+    #             (mcherry/pe/mepe/YL2)]
+    mef_values = np.array([[0, 806, 2159, 5640, 19900, 52630, 172155, 345870],
+                           [0, 409, 1250, 3428, 12229, 34294, 113118, 256134]] )
+
+    #Create transformation function
     mef_fun = FlowCal.mef.get_transform_fxn(fcs_beads_g,
                                             mef_values= mef_values,
                                             mef_channels = ['BL1-H', 'YL2-H'],
-                                            plot = True)
-
-
-    fcs = FlowCal.io.FCSData(fcs)
-
-    #Transform to au and MEF
-    fcs = FlowCal.transform.to_rfi(fcs)
-    fcs = FlowCal.gate.density2d(fcs, channels = ['BL1-H', 'YL2-H'])
-
-    FlowCal.plot.hist1d(fcs, channel = ['BL1-H', 'YL2-H'])
-
-
-    return(fcs)
+                                            plot = True,
+                                            plot_dir = 'MEF Function'
+                                            )
+    print("MEF transformation function generated")
+    return(mef_fun)
 
 
 
 
 
-os.chdir('/Users/lucarosa/Downloads/FlowCal-master/examples')
-b, b_g = beadsCalibration('FCFiles/Beads006.fcs')
 
 
