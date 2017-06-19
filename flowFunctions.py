@@ -5,6 +5,7 @@ import pandas as pd
 import glob
 import numpy as np
 import warnings
+import time
 
 def noZeros(fcs):
     '''Remove zero values and log10 transform'''
@@ -35,8 +36,7 @@ def plot(fcs, fcs_gate, contour, imageName, imagePath):
                                              gate_contour= contour,
                                              density_channels= ['FSC-H', 'SSC-H'],
                                              density_params= {'mode':'scatter',
-                                                              'xlim':[1e3, 1e5],
-                                                              'ylim': [1e3, 1e5],
+                                                              'xlim':[1e2, 1e5],
                                                               'xscale':'log',
                                                               'yscale':'log'
                                                                },
@@ -52,6 +52,7 @@ def processData(path, atc = False, iptg = False):
     if atc:
         filenamesATC = glob.glob('*atc*.fcs')
         dataATC = pd.DataFrame(columns = ('mCherry', 'GFP', 'Conc', 'Replicate'))
+
         for filename in filenamesATC:
             print(filename)
             singleFCS = FlowCal.io.FCSData(filename)
@@ -64,7 +65,11 @@ def processData(path, atc = False, iptg = False):
                                  'GFP': singleFCS[:, 'BL1-H'],
                                  'Conc': Conc,
                                  'Replicate': Replicate})
+
+            data = data.byteswap().newbyteorder()
+            data = pd.Series(data)
             dataATC = dataATC.append(data)
+
         dataATC.to_csv('dataATC.txt', "\t", header = True, columns = ['Conc', 'Replicate', 'mCherry', 'GFP'])
 
     if iptg:
@@ -87,9 +92,65 @@ def processData(path, atc = False, iptg = False):
 
         dataIPTG.to_csv('dataIPTG.txt', "\t", header = True, columns = ['Conc', 'Replicate', 'mCherry', 'GFP'])
 
-    print dataATC.Conc.unique()
-    print dataIPTG.Conc.unique()
 
+def processDataDirect(fcs, filename):
+    '''Extract the data from every single FCS file and create a txt file'''
+    #os.chdir(path)
+
+    if filename.find("atc") > -1:
+        inducer = "atc"
+    elif filename.find("iptg") > -1:
+        inducer = "iptg"
+
+    if inducer == "atc":
+
+        if os.path.isfile("dataATC.txt"):
+            dataATC = pd.read_csv("dataATC.txt")
+        else:
+            dataATC= pd.DataFrame(columns = ('Conc', 'Replicate', 'mCherry', 'GFP'))
+
+        num = len(fcs[:, 1])
+        splitname = os.path.splitext(filename)
+
+        splitname = splitname[0].split('_')
+        Conc = [float(splitname[2])] * num
+
+        Replicate = [int(splitname[3])] * num
+
+        data = pd.DataFrame({'Conc': Conc,
+                             'Replicate': Replicate,
+                            'mCherry': fcs[:, 'YL2-H'],
+                             'GFP': fcs[:, 'BL1-H']
+                             })
+
+
+
+        #dataATC = pd.concat([dataATC, data])
+        dataATC = dataATC.append(data)
+        dataATC.to_csv('dataATC.txt', ",", header = True, columns = ['Conc', 'Replicate', 'mCherry', 'GFP'], index = False)
+
+
+    if inducer == "iptg":
+
+        if os.path.isfile("dataATC.txt"):
+            dataIPTG = pd.read_csv("dataATC.txt")
+        else:
+            dataIPTG = pd.DataFrame(columns = ('Conc', 'Replicate', 'mCherry', 'GFP'))
+
+        num = len(fcs[:, 1])
+        splitname = os.path.splitext(filename)
+
+        splitname = splitname[0].split('_')
+        Conc = [float(splitname[2])] * num
+        Replicate = [int(splitname[3])] * num
+
+        data = pd.DataFrame({'mCherry': fcs[:, 'YL2-H'],
+                             'GFP': fcs[:, 'BL1-H'],
+                             'Conc': Conc,
+                             'Replicate': Replicate})
+
+        dataIPTG = dataIPTG.append(data)
+        dataIPTG.to_csv('dataIPTG.txt', ",", header = True, columns = ['Conc', 'Replicate', 'mCherry', 'GFP'], index = False)
 
 
 def beadsCalibration(imagePath):
@@ -126,7 +187,7 @@ def beadsCalibration(imagePath):
                                             mef_values= mef_values,
                                             mef_channels = ['BL1-H', 'YL2-H'],
                                             plot = True,
-                                            plot_dir = 'MEF Function'
+                                            plot_dir = imagePath
                                             )
     print("MEF transformation function generated")
     return(mef_fun)
