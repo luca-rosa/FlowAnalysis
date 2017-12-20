@@ -99,124 +99,144 @@ def processDataDirect(fcs, filename):
     '''Extract the data from every single FCS file and create a txt file'''
     #os.chdir(path)
 
-    # if filename.find("atc") > -1:
-    #     inducer = "atc"
-    # elif filename.find("iptg") > -1:
-    #     inducer = "iptg"
-    # elif filename.find("AHL") > -1:
-    #     inducer = "AHL"
-    # elif filename.find("lpatoL") > -1:
-    #     inducer = "lpatoL"
 
-    inducer = "lpatoL"
+    inducer = filename.split("_")[1]
 
-    if inducer == "AHL":
+    output_data_name = "data_" + inducer + ".txt"
 
-        if os.path.isfile("data_ahl.txt"):
-            dataahl = pd.read_csv("data_ahl.txt")
-        else:
-            dataahl= pd.DataFrame(columns = ('Concentration', 'Replicate', 'mCherry', 'GFP'))
+    if os.path.isfile(output_data_name):
+        output_data = pd.read_csv("data_ahl.txt")
+    else:
+        output_data = pd.DataFrame(columns=('Concentration', 'Replicate', 'mCherry', 'GFP'))
 
-        num = len(fcs[:, 1])
-        splitname = os.path.splitext(filename)
+    num = len(fcs[:, 1])
+    splitname = os.path.splitext(filename)
 
-        splitname = splitname[0].split('_')
-        Conc = [str(splitname[2])] * num
+    splitname = splitname[0].split('_')
+    Conc = [str(splitname[2])] * num
 
-        Replicate = [int(splitname[3])] * num
+    Replicate = [int(splitname[3])] * num
 
-        data = pd.DataFrame({'Concentration': Conc,
-                             'Replicate': Replicate,
-                            'mCherry': fcs[:, 'YL2-H'],
-                             'GFP': fcs[:, 'BL1-H']
-                             })
+    data = pd.DataFrame({'Concentration': Conc,
+                         'Replicate': Replicate,
+                         'mCherry': fcs[:, 'YL2-H'],
+                         'GFP': fcs[:, 'BL1-H']
+                         })
 
-
-
-        #dataahl = pd.concat([dataahl, data])
-        dataahl = dataahl.append(data)
-        dataahl.to_csv('data_ahl.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'mCherry', 'GFP'], index = False)
-
-    if inducer == "lpatoL":
-
-        if os.path.isfile("data_lpatoL.txt"):
-            datalpatoL = pd.read_csv("data_lpatoL.txt")
-        else:
-            datalpatoL= pd.DataFrame(columns = ('Concentration', 'Replicate', 'GFP'))
-
-        num = len(fcs[:, 1])
-        splitname = os.path.splitext(filename)
-
-        splitname = splitname[0].split('_')
-        Conc = [str(splitname[2])] * num
-
-        Replicate = [int(splitname[3])] * num
-
-        data = pd.DataFrame({'Concentration': Conc,
-                             'Replicate': Replicate,
-                             # 'mCherry': fcs[:, 'YL2-H'],
-                             'GFP': fcs[:, 'BL1-H']
-                             })
-
-
-
-        #datalpatoL = pd.concat([datalpatoL, data])
-        datalpatoL = datalpatoL.append(data)
-        datalpatoL.to_csv('data_lpatoL.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'GFP'], index = False)
+    # dataahl = pd.concat([dataahl, data])
+    output_data = output_data.append(data)
+    output_data.to_csv(output_data_name, ",", header=True, columns=['Concentration', 'Replicate', 'mCherry', 'GFP'], index=False)
 
 
 
 
-    if inducer == "atc":
-
-        if os.path.isfile("data_atc.txt"):
-            dataATC = pd.read_csv("data_atc.txt")
-        else:
-            dataATC= pd.DataFrame(columns = ('Concentration', 'Replicate', 'mCherry', 'GFP'))
-
-        num = len(fcs[:, 1])
-        splitname = os.path.splitext(filename)
-
-        splitname = splitname[0].split('_')
-        Conc = [float(splitname[2])] * num
-
-        Replicate = [int(splitname[3])] * num
-
-        data = pd.DataFrame({'Concentration': Conc,
-                             'Replicate': Replicate,
-                            'mCherry': fcs[:, 'YL2-H'],
-                             'GFP': fcs[:, 'BL1-H']
-                             })
-
-
-
-        #dataATC = pd.concat([dataATC, data])
-        dataATC = dataATC.append(data)
-        dataATC.to_csv('data_atc.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'mCherry', 'GFP'], index = False)
-
-
-    if inducer == "iptg":
-
-        if os.path.isfile("data_iptg.txt"):
-            dataIPTG = pd.read_csv("data_iptg.txt")
-        else:
-            dataIPTG = pd.DataFrame(columns = ('Conc', 'Replicate', 'mCherry', 'GFP'))
-
-        num = len(fcs[:, 1])
-        splitname = os.path.splitext(filename)
-
-        splitname = splitname[0].split('_')
-        Conc = [float(splitname[2])] * num
-        Replicate = [int(splitname[3])] * num
-
-        data = pd.DataFrame({'Concentration': Conc,
-                             'Replicate': Replicate,
-                            'mCherry': fcs[:, 'YL2-H'],
-                             'GFP': fcs[:, 'BL1-H']
-                             })
-
-        dataIPTG = dataIPTG.append(data)
-        dataIPTG.to_csv('data_iptg.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'mCherry', 'GFP'], index = False)
+    # if inducer == "AHL":
+    #
+    #     if os.path.isfile("data_ahl.txt"):
+    #         dataahl = pd.read_csv("data_ahl.txt")
+    #     else:
+    #         dataahl= pd.DataFrame(columns = ('Concentration', 'Replicate', 'mCherry', 'GFP'))
+    #
+    #     num = len(fcs[:, 1])
+    #     splitname = os.path.splitext(filename)
+    #
+    #     splitname = splitname[0].split('_')
+    #     Conc = [str(splitname[2])] * num
+    #
+    #     Replicate = [int(splitname[3])] * num
+    #
+    #     data = pd.DataFrame({'Concentration': Conc,
+    #                          'Replicate': Replicate,
+    #                         'mCherry': fcs[:, 'YL2-H'],
+    #                          'GFP': fcs[:, 'BL1-H']
+    #                          })
+    #
+    #
+    #
+    #     #dataahl = pd.concat([dataahl, data])
+    #     dataahl = dataahl.append(data)
+    #     dataahl.to_csv('data_ahl.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'mCherry', 'GFP'], index = False)
+    #
+    # if inducer == "lpatoL":
+    #
+    #     if os.path.isfile("data_lpatoL.txt"):
+    #         datalpatoL = pd.read_csv("data_lpatoL.txt")
+    #     else:
+    #         datalpatoL= pd.DataFrame(columns = ('Concentration', 'Replicate', 'GFP'))
+    #
+    #     num = len(fcs[:, 1])
+    #     splitname = os.path.splitext(filename)
+    #
+    #     splitname = splitname[0].split('_')
+    #     Conc = [str(splitname[2])] * num
+    #
+    #     Replicate = [int(splitname[3])] * num
+    #
+    #     data = pd.DataFrame({'Concentration': Conc,
+    #                          'Replicate': Replicate,
+    #                          # 'mCherry': fcs[:, 'YL2-H'],
+    #                          'GFP': fcs[:, 'BL1-H']
+    #                          })
+    #
+    #
+    #
+    #     #datalpatoL = pd.concat([datalpatoL, data])
+    #     datalpatoL = datalpatoL.append(data)
+    #     datalpatoL.to_csv('data_lpatoL.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'GFP'], index = False)
+    #
+    #
+    #
+    #
+    # if inducer == "atc":
+    #
+    #     if os.path.isfile("data_atc.txt"):
+    #         dataATC = pd.read_csv("data_atc.txt")
+    #     else:
+    #         dataATC= pd.DataFrame(columns = ('Concentration', 'Replicate', 'mCherry', 'GFP'))
+    #
+    #     num = len(fcs[:, 1])
+    #     splitname = os.path.splitext(filename)
+    #
+    #     splitname = splitname[0].split('_')
+    #     Conc = [float(splitname[2])] * num
+    #
+    #     Replicate = [int(splitname[3])] * num
+    #
+    #     data = pd.DataFrame({'Concentration': Conc,
+    #                          'Replicate': Replicate,
+    #                         'mCherry': fcs[:, 'YL2-H'],
+    #                          'GFP': fcs[:, 'BL1-H']
+    #                          })
+    #
+    #
+    #
+    #     #dataATC = pd.concat([dataATC, data])
+    #     dataATC = dataATC.append(data)
+    #     dataATC.to_csv('data_atc.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'mCherry', 'GFP'], index = False)
+    #
+    #
+    # if inducer == "iptg":
+    #
+    #     if os.path.isfile("data_iptg.txt"):
+    #         dataIPTG = pd.read_csv("data_iptg.txt")
+    #     else:
+    #         dataIPTG = pd.DataFrame(columns = ('Conc', 'Replicate', 'mCherry', 'GFP'))
+    #
+    #     num = len(fcs[:, 1])
+    #     splitname = os.path.splitext(filename)
+    #
+    #     splitname = splitname[0].split('_')
+    #     Conc = [float(splitname[2])] * num
+    #     Replicate = [int(splitname[3])] * num
+    #
+    #     data = pd.DataFrame({'Concentration': Conc,
+    #                          'Replicate': Replicate,
+    #                         'mCherry': fcs[:, 'YL2-H'],
+    #                          'GFP': fcs[:, 'BL1-H']
+    #                          })
+    #
+    #     dataIPTG = dataIPTG.append(data)
+    #     dataIPTG.to_csv('data_iptg.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'mCherry', 'GFP'], index = False)
 
 
 def beadsCalibration(imagePath):
