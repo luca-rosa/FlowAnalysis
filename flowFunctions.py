@@ -105,7 +105,7 @@ def processDataDirect(fcs, filename):
     output_data_name = "data_" + inducer + ".txt"
 
     if os.path.isfile(output_data_name):
-        output_data = pd.read_csv("data_ahl.txt")
+        output_data = pd.read_csv(output_data_name)
     else:
         output_data = pd.DataFrame(columns=('Concentration', 'Replicate', 'mCherry', 'GFP'))
 
