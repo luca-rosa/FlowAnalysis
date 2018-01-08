@@ -1,5 +1,4 @@
 import FlowCal
-import matplotlib.pyplot as plt
 import os
 import pandas as pd
 import glob
@@ -41,58 +40,58 @@ def plot(fcs, fcs_gate, contour, imageName, imagePath):
                                                               'xscale':'log',
                                                               'yscale':'log'
                                                                },
-                                             hist_channels = ['BL1-H'],
-                                             # hist_channels=['BL1-H', 'YL2-H'],
+                                             # hist_channels = ['BL1-H'],
+                                             hist_channels=['BL1-H', 'YL2-H'],
                                              savefig = imageName
                                              )
     return fcs_plot
 
-def processData(path, atc = False, iptg = False):
-    '''Extract the data from every single FCS file and create a txt file'''
-    os.chdir(path)
-
-    if atc:
-        filenamesATC = glob.glob('*atc*.fcs')
-        dataATC = pd.DataFrame(columns = ('mCherry', 'GFP', 'Conc', 'Replicate'))
-
-        for filename in filenamesATC:
-            print(filename)
-            singleFCS = FlowCal.io.FCSData(filename)
-            num = len(singleFCS[:, 1])
-            splitname = os.path.splitext(filename)
-            splitname = splitname[0].split('_')
-            Conc = [float(splitname[2])] * num
-            Replicate = [int(splitname[3])] * num
-            data = pd.DataFrame({'mCherry': singleFCS[:, 'YL2-H'],
-                                 'GFP': singleFCS[:, 'BL1-H'],
-                                 'Conc': Conc,
-                                 'Replicate': Replicate})
-
-            data = data.byteswap().newbyteorder()
-            data = pd.Series(data)
-            dataATC = dataATC.append(data)
-
-        dataATC.to_csv('dataATC.txt', "\t", header = True, columns = ['Conc', 'Replicate', 'mCherry', 'GFP'])
-
-    if iptg:
-        filenamesIPTG = glob.glob('*iptg*.fcs')
-        dataIPTG = pd.DataFrame(columns = ('mCherry', 'GFP', 'Conc', 'Replicate'))
-        for filename in filenamesIPTG:
-            print(filename)
-            singleFCS = FlowCal.io.FCSData(filename)
-            num = len(singleFCS[:, 1])
-            splitname = os.path.splitext(filename)
-            splitname = splitname[0].split('_')
-            Conc = [float(splitname[2])] * num
-            Replicate = [int(splitname[3])] * num
-
-            data = pd.DataFrame({'mCherry': singleFCS[:, 'YL2-H'],
-                                 'GFP': singleFCS[:, 'BL1-H'],
-                                 'Conc': Conc,
-                                 'Replicate': Replicate})
-            dataIPTG = dataIPTG.append(data)
-
-        dataIPTG.to_csv('dataIPTG.txt', "\t", header = True, columns = ['Conc', 'Replicate', 'mCherry', 'GFP'])
+# def processData(path, atc = False, iptg = False):
+#     '''Extract the data from every single FCS file and create a txt file'''
+#     os.chdir(path)
+#
+#     if atc:
+#         filenamesATC = glob.glob('*atc*.fcs')
+#         dataATC = pd.DataFrame(columns = ('mCherry', 'GFP', 'Conc', 'Replicate'))
+#
+#         for filename in filenamesATC:
+#             print(filename)
+#             singleFCS = FlowCal.io.FCSData(filename)
+#             num = len(singleFCS[:, 1])
+#             splitname = os.path.splitext(filename)
+#             splitname = splitname[0].split('_')
+#             Conc = [float(splitname[2])] * num
+#             Replicate = [int(splitname[3])] * num
+#             data = pd.DataFrame({'mCherry': singleFCS[:, 'YL2-H'],
+#                                  'GFP': singleFCS[:, 'BL1-H'],
+#                                  'Conc': Conc,
+#                                  'Replicate': Replicate})
+#
+#             data = data.byteswap().newbyteorder()
+#             data = pd.Series(data)
+#             dataATC = dataATC.append(data)
+#
+#         dataATC.to_csv('dataATC.txt', "\t", header = True, columns = ['Conc', 'Replicate', 'mCherry', 'GFP'])
+#
+#     if iptg:
+#         filenamesIPTG = glob.glob('*iptg*.fcs')
+#         dataIPTG = pd.DataFrame(columns = ('mCherry', 'GFP', 'Conc', 'Replicate'))
+#         for filename in filenamesIPTG:
+#             print(filename)
+#             singleFCS = FlowCal.io.FCSData(filename)
+#             num = len(singleFCS[:, 1])
+#             splitname = os.path.splitext(filename)
+#             splitname = splitname[0].split('_')
+#             Conc = [float(splitname[2])] * num
+#             Replicate = [int(splitname[3])] * num
+#
+#             data = pd.DataFrame({'mCherry': singleFCS[:, 'YL2-H'],
+#                                  'GFP': singleFCS[:, 'BL1-H'],
+#                                  'Conc': Conc,
+#                                  'Replicate': Replicate})
+#             dataIPTG = dataIPTG.append(data)
+#
+#         dataIPTG.to_csv('dataIPTG.txt', "\t", header = True, columns = ['Conc', 'Replicate', 'mCherry', 'GFP'])
 
 
 def processDataDirect(fcs, filename):
@@ -101,6 +100,7 @@ def processDataDirect(fcs, filename):
 
 
     inducer = filename.split("_")[1]
+    plasmid = filename.split("_")[0]
 
     output_data_name = "data_" + inducer + ".txt"
 
@@ -117,7 +117,8 @@ def processDataDirect(fcs, filename):
 
     Replicate = [int(splitname[3])] * num
 
-    data = pd.DataFrame({'Concentration': Conc,
+    data = pd.DataFrame({'Plasmid': plasmid,
+                         'Concentration': Conc,
                          'Replicate': Replicate,
                          'mCherry': fcs[:, 'YL2-H'],
                          'GFP': fcs[:, 'BL1-H']
@@ -125,118 +126,12 @@ def processDataDirect(fcs, filename):
 
     # dataahl = pd.concat([dataahl, data])
     output_data = output_data.append(data)
-    output_data.to_csv(output_data_name, ",", header=True, columns=['Concentration', 'Replicate', 'mCherry', 'GFP'], index=False)
+    output_data.to_csv(output_data_name, ",", header=True, columns=['Plasmid', 'Concentration', 'Replicate', 'mCherry', 'GFP'], index=False)
 
 
 
 
-    # if inducer == "AHL":
-    #
-    #     if os.path.isfile("data_ahl.txt"):
-    #         dataahl = pd.read_csv("data_ahl.txt")
-    #     else:
-    #         dataahl= pd.DataFrame(columns = ('Concentration', 'Replicate', 'mCherry', 'GFP'))
-    #
-    #     num = len(fcs[:, 1])
-    #     splitname = os.path.splitext(filename)
-    #
-    #     splitname = splitname[0].split('_')
-    #     Conc = [str(splitname[2])] * num
-    #
-    #     Replicate = [int(splitname[3])] * num
-    #
-    #     data = pd.DataFrame({'Concentration': Conc,
-    #                          'Replicate': Replicate,
-    #                         'mCherry': fcs[:, 'YL2-H'],
-    #                          'GFP': fcs[:, 'BL1-H']
-    #                          })
-    #
-    #
-    #
-    #     #dataahl = pd.concat([dataahl, data])
-    #     dataahl = dataahl.append(data)
-    #     dataahl.to_csv('data_ahl.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'mCherry', 'GFP'], index = False)
-    #
-    # if inducer == "lpatoL":
-    #
-    #     if os.path.isfile("data_lpatoL.txt"):
-    #         datalpatoL = pd.read_csv("data_lpatoL.txt")
-    #     else:
-    #         datalpatoL= pd.DataFrame(columns = ('Concentration', 'Replicate', 'GFP'))
-    #
-    #     num = len(fcs[:, 1])
-    #     splitname = os.path.splitext(filename)
-    #
-    #     splitname = splitname[0].split('_')
-    #     Conc = [str(splitname[2])] * num
-    #
-    #     Replicate = [int(splitname[3])] * num
-    #
-    #     data = pd.DataFrame({'Concentration': Conc,
-    #                          'Replicate': Replicate,
-    #                          # 'mCherry': fcs[:, 'YL2-H'],
-    #                          'GFP': fcs[:, 'BL1-H']
-    #                          })
-    #
-    #
-    #
-    #     #datalpatoL = pd.concat([datalpatoL, data])
-    #     datalpatoL = datalpatoL.append(data)
-    #     datalpatoL.to_csv('data_lpatoL.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'GFP'], index = False)
-    #
-    #
-    #
-    #
-    # if inducer == "atc":
-    #
-    #     if os.path.isfile("data_atc.txt"):
-    #         dataATC = pd.read_csv("data_atc.txt")
-    #     else:
-    #         dataATC= pd.DataFrame(columns = ('Concentration', 'Replicate', 'mCherry', 'GFP'))
-    #
-    #     num = len(fcs[:, 1])
-    #     splitname = os.path.splitext(filename)
-    #
-    #     splitname = splitname[0].split('_')
-    #     Conc = [float(splitname[2])] * num
-    #
-    #     Replicate = [int(splitname[3])] * num
-    #
-    #     data = pd.DataFrame({'Concentration': Conc,
-    #                          'Replicate': Replicate,
-    #                         'mCherry': fcs[:, 'YL2-H'],
-    #                          'GFP': fcs[:, 'BL1-H']
-    #                          })
-    #
-    #
-    #
-    #     #dataATC = pd.concat([dataATC, data])
-    #     dataATC = dataATC.append(data)
-    #     dataATC.to_csv('data_atc.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'mCherry', 'GFP'], index = False)
-    #
-    #
-    # if inducer == "iptg":
-    #
-    #     if os.path.isfile("data_iptg.txt"):
-    #         dataIPTG = pd.read_csv("data_iptg.txt")
-    #     else:
-    #         dataIPTG = pd.DataFrame(columns = ('Conc', 'Replicate', 'mCherry', 'GFP'))
-    #
-    #     num = len(fcs[:, 1])
-    #     splitname = os.path.splitext(filename)
-    #
-    #     splitname = splitname[0].split('_')
-    #     Conc = [float(splitname[2])] * num
-    #     Replicate = [int(splitname[3])] * num
-    #
-    #     data = pd.DataFrame({'Concentration': Conc,
-    #                          'Replicate': Replicate,
-    #                         'mCherry': fcs[:, 'YL2-H'],
-    #                          'GFP': fcs[:, 'BL1-H']
-    #                          })
-    #
-    #     dataIPTG = dataIPTG.append(data)
-    #     dataIPTG.to_csv('data_iptg.txt', ",", header = True, columns = ['Concentration', 'Replicate', 'mCherry', 'GFP'], index = False)
+
 
 
 def beadsCalibration(imagePath):

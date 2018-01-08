@@ -12,9 +12,9 @@ def main():
 
     os.chdir(path)
     filenames = glob.glob("*.fcs")
-
+    print(sys.argv[0])
     folderName = os.getcwd() + '_gated'
-
+    print(sys.argv[0])
     if os.path.isdir(folderName):
         answer = raw_input("The folder with the gated files already exist, do yo want to overwrite it? (Y/N)")
         if (answer == "Y") or (answer == "yes") or (answer == "Yes") or (answer == 'y') or (answer == "yes"):
@@ -54,6 +54,7 @@ def main():
         # Convert to MEF
         fcs_MEF = mef_fun(fcs_gate, channels=['BL1-H', 'YL2-H'])
         os.chdir(folderName)
+
         fcs_MEF = np.log10(fcs_MEF)
         processDataDirect(fcs_MEF, file)
 
