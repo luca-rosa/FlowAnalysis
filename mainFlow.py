@@ -6,15 +6,26 @@ import shutil
 
 from flowFunctions import *
 
+
 def main():
-    #path = '/Users/lucarosa/Documents/PhD/Data/Raw/Flow/Concentration_Assay/17_06_29/Old'
-    path = raw_input  ("Insert FCS path: ")
+    path = raw_input("Insert FCS path: ")
 
     os.chdir(path)
     filenames = glob.glob("*.fcs")
-    print(sys.argv[0])
     folderName = os.getcwd() + '_gated'
-    print(sys.argv[0])
+
+    if len(sys.argv) > 1:
+        print(sys.argv[1])
+        if float(sys.argv[1]) < 20 or float(sys.argv[1]) > 90:
+            sys.exit("Error: Insert  between 20 and 90")
+
+        print("Gating at " + str(sys.argv[1]) + "%")
+        gating_per = float(sys.argv[1]) / 100
+
+    else:
+        gating_per = 0.50
+        print("Gating at default 50%")
+
     if os.path.isdir(folderName):
         answer = raw_input("The folder with the gated files already exist, do yo want to overwrite it? (Y/N)")
         if (answer == "Y") or (answer == "yes") or (answer == "Yes") or (answer == 'y') or (answer == "yes"):
@@ -25,8 +36,6 @@ def main():
     else:
         os.mkdir(folderName)
 
-
-
     imageGatingPath = folderName + '/gating_plots'
     imageMEFPath = folderName + '/MEF_conversion'
     if not os.path.isdir(imageGatingPath):
@@ -35,20 +44,19 @@ def main():
 
     mef_fun = beadsCalibration(imageMEFPath)
 
-
     for file in filenames:
         os.chdir(path)
         print('Processing ' + file)
 
         fcs = FlowCal.io.FCSData(file)
-        # Remove zero values and (not) log everything
+        # Remove zero values
         fcs_noZero = noZeros(fcs)
 
         # Density gate and return contour for plotting
-        fcs_gate, contour = gating(fcs_noZero)
+        fcs_gate, contour = gating(fcs_noZero, gating_per)
         imageName = os.path.splitext(file)[0] + '.png'
 
-        #Save the the gate plot
+        # Save the the gate plot
         plot(fcs, fcs_gate, contour, imageName, imageGatingPath)
 
         # Convert to MEF
@@ -56,37 +64,9 @@ def main():
         os.chdir(folderName)
 
         fcs_MEF = np.log10(fcs_MEF)
+
+        # Outputs csv file
         processDataDirect(fcs_MEF, file)
-
-        # fcs_gate = np.log10(fcs_gate)
-        # processDataDirect(fcs_gate, file)
-
 
 
 main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
