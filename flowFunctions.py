@@ -48,7 +48,7 @@ def plot(fcs, fcs_gate, contour, imageName, imagePath):
     return fcs_plot
 
 
-def processDataDirect(fcs, filename):
+def processData(fcs, filename):
     '''Extract the data from every single FCS file and create a txt file'''
     # os.chdir(path)
 

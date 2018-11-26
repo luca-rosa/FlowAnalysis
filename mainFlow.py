@@ -8,14 +8,8 @@ from flowFunctions import *
 
 
 def main():
-    path = raw_input("Insert FCS path: ")
-
-    os.chdir(path)
-    filenames = glob.glob("*.fcs")
-    folderName = os.getcwd() + '_gated'
 
     if len(sys.argv) > 1:
-        print(sys.argv[1])
         if float(sys.argv[1]) < 20 or float(sys.argv[1]) > 90:
             sys.exit("Error: Insert  between 20 and 90")
 
@@ -25,6 +19,12 @@ def main():
     else:
         gating_per = 0.50
         print("Gating at default 50%")
+
+    path = raw_input("Insert FCS path: ")
+
+    os.chdir(path)
+    filenames = glob.glob("*.fcs")
+    folderName = os.getcwd() + '_gated'
 
     if os.path.isdir(folderName):
         answer = raw_input("The folder with the gated files already exist, do yo want to overwrite it? (Y/N)")
@@ -66,7 +66,7 @@ def main():
         fcs_MEF = np.log10(fcs_MEF)
 
         # Outputs csv file
-        processDataDirect(fcs_MEF, file)
+        processData(fcs_MEF, file)
 
 
 main()
