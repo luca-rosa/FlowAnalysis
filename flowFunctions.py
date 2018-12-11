@@ -8,14 +8,15 @@ import pprint
 import time
 
 
-def noZeros(fcs):
+def noZeros(fcs, ssch_ts, fsch_ts, colour_channels):
     '''Remove zero values'''
 
-    for channel in ('FSC-H', 'SSC-H', 'SSC-A'):
+    channels = ['FSC-H', 'SSC-H', 'SSC-A'] + colour_channels
+    for channel in channels:
         mask = fcs[:, channel] > 0
         fcs = fcs[mask, :]
-    mask = fcs[:, "SSC-H"] > 200
-    fcs = fcs[mask, :]
+    mask = fcs[:, "SSC-H"] > ssch_ts
+    mask = fcs[:, "FSC-H"] > fsch_ts
 
     return(fcs)
 
@@ -81,12 +82,12 @@ def processData(fcs, filename):
     output_data.to_csv(output_data_name, ",", header=True, columns=['Plasmid', 'Concentration', 'Replicate', 'mCherry', 'GFP'], index=False)
 
 
-def beadsCalibration(imagePath):
+def beadsCalibration(imagePath, beads_path):
     '''Create au-mef function'''
     warnings.filterwarnings('ignore')
 
     # Load beads data
-    beads_path = raw_input("Insert beads FCS path:")
+    # beads_path = raw_input("Insert beads FCS path:")
     os.chdir(beads_path)
     fcs_beads = glob.glob("*.fcs")
     fcs_beads = FlowCal.io.FCSData(fcs_beads[0])
