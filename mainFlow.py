@@ -43,21 +43,22 @@ def main():
     #     print("Gating at default 50%")
 
     def cls():
-        os.system('cls' if os.name=='nt' else 'clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
 
     cls()
 
+    # if sys.version_info[0] == 2:
     print(' ')
     print(" ")
     print("CONFIG FILE:")
     print(" ")
     print("THRESHOLDS:")
-    print(" " + "FSC-H" + str(fsch_ts))
-    print(" " + "SSC-H" + str(ssch_ts))
+    print(" " + "FSC-H" + " " + str(fsch_ts))
+    print(" " + "SSC-H" + " " + str(ssch_ts))
     print(" ")
     print("PATH:")
-    print(" " + "Files path:" + " " + path)
-    print(" " + "Beads path:" + " " + beads_path)
+    print(" " + "Files path:" + " " + str(path))
+    print(" " + "Beads path:" + " " + str(beads_path))
     print(" ")
     print("CHANNELS")
     print("Colour channles:" + " " + str(channels_list))

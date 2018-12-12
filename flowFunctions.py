@@ -16,7 +16,10 @@ def noZeros(fcs, ssch_ts, fsch_ts, colour_channels):
         mask = fcs[:, channel] > 0
         fcs = fcs[mask, :]
     mask = fcs[:, "SSC-H"] > ssch_ts
+    fcs = fcs[mask, :]
+    # print(np.nanmin(fcs[:, 'SSC-H']))
     mask = fcs[:, "FSC-H"] > fsch_ts
+    fcs = fcs[mask, :]
 
     return(fcs)
 
